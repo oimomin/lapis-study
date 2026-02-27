@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function SignInPage() {
     return (
@@ -12,18 +13,27 @@ export default function SignInPage() {
             <div className="relative z-10 w-full max-w-md p-8 md:p-10 rounded-3xl backdrop-blur-xl bg-white/50 dark:bg-black/30 border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]">
 
                 <div className="text-center mb-8">
+                    <div className="flex justify-center mb-6">
+                        <Image
+                            src="/lapis_icon.png"
+                            alt="LapisStudy Icon"
+                            width={64}
+                            height={64}
+                            className="w-16 h-16 drop-shadow-md"
+                        />
+                    </div>
                     <h1 className="text-3xl md:text-4xl font-extrabold text-lapis-900 dark:text-lapis-50 mb-2 tracking-tight">
-                        Welcome Back
+                        おかえりなさい
                     </h1>
                     <p className="text-app-text2 dark:text-app-text2-dark">
-                        Sign in to continue your learning journey
+                        ログインして学習を続けましょう
                     </p>
                 </div>
 
                 <form className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-app-text dark:text-app-text-dark mb-1">
-                            Email Address
+                            メールアドレス
                         </label>
                         <input
                             type="email"
@@ -36,10 +46,10 @@ export default function SignInPage() {
                     <div>
                         <div className="flex items-center justify-between mb-1">
                             <label className="block text-sm font-medium text-app-text dark:text-app-text-dark">
-                                Password
+                                パスワード
                             </label>
                             <Link href="#" className="text-sm font-medium text-lapis-600 dark:text-lapis-400 hover:text-lapis-500 transition-colors">
-                                Forgot password?
+                                パスワードをお忘れですか？
                             </Link>
                         </div>
                         <input
@@ -54,14 +64,14 @@ export default function SignInPage() {
                         type="button"
                         className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-lapis-600 to-lapis-500 hover:from-lapis-700 hover:to-lapis-600 text-white font-semibold shadow-lg shadow-lapis-500/30 transform transition-all active:scale-[0.98] hover:shadow-lapis-500/50"
                     >
-                        Sign In
+                        ログイン
                     </button>
                 </form>
 
                 <div className="mt-8 text-center text-sm text-app-text2 dark:text-app-text2-dark">
-                    Don't have an account?{" "}
+                    アカウントをお持ちではありませんか？{" "}
                     <Link href="/signup" className="font-semibold text-lapis-600 dark:text-lapis-400 hover:text-lapis-500 transition-colors">
-                        Create account
+                        アカウント作成
                     </Link>
                 </div>
             </div>
