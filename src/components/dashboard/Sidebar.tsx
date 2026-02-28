@@ -16,7 +16,8 @@ import {
     FileText,
     NotebookPen,
     ListTodo,
-    LogOut
+    LogOut,
+    Users
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -54,6 +55,7 @@ export default function Sidebar({ user, onClose }: { user: UserProfile, onClose:
 
     if (user.role === "admin") {
         roleLinks = [
+            { name: "ユーザー管理", href: "/dashboard/users", icon: Users },
             { name: "成績管理", href: "/dashboard/grades/manage", icon: FilePenLine },
             { name: "契約管理", href: "/dashboard/contracts/manage", icon: FileSignature },
         ];
@@ -61,6 +63,7 @@ export default function Sidebar({ user, onClose }: { user: UserProfile, onClose:
         roleLinks = [
             { name: "成績報告", href: "/dashboard/grades", icon: LineChart },
             { name: "契約確認", href: "/dashboard/contracts", icon: FileText },
+            { name: "新規契約", href: "/dashboard/contracts/new", icon: FileSignature },
         ];
     } else if (user.role === "student") {
         roleLinks = [
@@ -77,8 +80,8 @@ export default function Sidebar({ user, onClose }: { user: UserProfile, onClose:
                 href={link.href}
                 onClick={onClose}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-                        ? "bg-lapis-500 text-white shadow-md shadow-lapis-500/30"
-                        : "text-app-text2 dark:text-app-text2-dark hover:bg-lapis-50 dark:hover:bg-lapis-900/30 hover:text-lapis-600 dark:hover:text-lapis-400"
+                    ? "bg-lapis-500 text-white shadow-md shadow-lapis-500/30"
+                    : "text-app-text2 dark:text-app-text2-dark hover:bg-lapis-50 dark:hover:bg-lapis-900/30 hover:text-lapis-600 dark:hover:text-lapis-400"
                     }`}
             >
                 <link.icon className={`w-5 h-5 ${isActive ? "text-white" : "text-gray-400 group-hover:text-lapis-500"}`} />

@@ -19,8 +19,7 @@ const signupSchema = z.object({
         .regex(/[a-z]/, "小文字を1つ以上含めてください")
         .regex(/[0-9]/, "数字を1つ以上含めてください")
         .regex(/[^A-Za-z0-9]/, "記号を1つ以上含めてください"),
-    role: z.enum(["student", "parent", "admin"]).or(z.literal(""))
-        .refine((val) => val !== "", { message: "役割を選択してください" }),
+    role: z.string().refine(val => ["student", "parent", "admin"].includes(val), { message: "役割を選択してください" }),
     lastName: z.string().min(1, "姓を入力してください").max(50, "50文字以内で入力してください"),
     firstName: z.string().min(1, "名を入力してください").max(50, "50文字以内で入力してください"),
     birthdate: z.string().optional(),
