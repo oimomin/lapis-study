@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -18,9 +19,8 @@ const signupSchema = z.object({
         .regex(/[a-z]/, "小文字を1つ以上含めてください")
         .regex(/[0-9]/, "数字を1つ以上含めてください")
         .regex(/[^A-Za-z0-9]/, "記号を1つ以上含めてください"),
-    role: z.enum(["student", "parent", "admin"], {
-        errorMap: () => ({ message: "役割を選択してください" })
-    }).or(z.literal("")),
+    role: z.enum(["student", "parent", "admin"]).or(z.literal(""))
+        .refine((val) => val !== "", { message: "役割を選択してください" }),
     lastName: z.string().min(1, "姓を入力してください").max(50, "50文字以内で入力してください"),
     firstName: z.string().min(1, "名を入力してください").max(50, "50文字以内で入力してください"),
     birthdate: z.string().optional(),
@@ -49,6 +49,7 @@ export default function SignUpPage() {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const totalSteps = 4;
 
@@ -233,12 +234,21 @@ export default function SignUpPage() {
                                 <label className="block text-sm font-medium text-app-text dark:text-app-text-dark mb-1">
                                     パスワード <span className="text-xs font-normal text-gray-500 dark:text-gray-400">(大文字, 小文字, 数字, 記号を各1つ以上含む8文字以上)</span>
                                 </label>
-                                <input
-                                    type="password"
-                                    {...register("password")}
-                                    placeholder="••••••••"
-                                    className={`w-full px-4 py-3 rounded-xl bg-white/60 dark:bg-black/40 border focus:ring-2 focus:border-transparent outline-none transition-all placeholder:text-gray-400 text-app-text dark:text-app-text-dark backdrop-blur-sm ${errors.password ? 'border-red-400 focus:ring-red-400' : 'border-app-border dark:border-app-border-dark focus:ring-lapis-400'}`}
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        {...register("password")}
+                                        placeholder="••••••••"
+                                        className={`w-full px-4 py-3 pr-12 rounded-xl bg-white/60 dark:bg-black/40 border focus:ring-2 focus:border-transparent outline-none transition-all placeholder:text-gray-400 text-app-text dark:text-app-text-dark backdrop-blur-sm ${errors.password ? 'border-red-400 focus:ring-red-400' : 'border-app-border dark:border-app-border-dark focus:ring-lapis-400'}`}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
+                                </div>
                                 {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
                             </div>
 
