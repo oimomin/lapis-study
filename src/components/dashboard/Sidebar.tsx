@@ -45,6 +45,7 @@ export default function Sidebar({ user, onClose }: { user: UserProfile, onClose:
         { name: "スケジュール", href: "/dashboard/schedule", icon: Calendar },
         { name: "やること", href: "/dashboard/todos", icon: ListTodo },
         { name: "教材ライブラリ", href: "/dashboard/materials", icon: BookOpen },
+        { name: "成績インサイト", href: "/dashboard/grades", icon: LineChart },
     ];
 
     const bottomLinks = [
@@ -65,14 +66,12 @@ export default function Sidebar({ user, onClose }: { user: UserProfile, onClose:
         ];
     } else if (user.role === "parent") {
         roleLinks = [
-            { name: "成績報告", href: "/dashboard/grades", icon: LineChart },
             { name: "宿題確認", href: "/dashboard/homework/parent", icon: NotebookPen },
             { name: "契約確認", href: "/dashboard/contracts", icon: FileText },
             { name: "新規契約", href: "/dashboard/contracts/new", icon: FileSignature },
         ];
     } else if (user.role === "student") {
         roleLinks = [
-            { name: "成績報告", href: "/dashboard/grades", icon: LineChart },
             { name: "宿題報告", href: "/dashboard/homework/submit", icon: NotebookPen },
         ];
     }

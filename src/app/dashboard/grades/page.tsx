@@ -77,9 +77,15 @@ export default function GradeInsightsPage() {
                     targetStudentIds = kids.map(k => k.id);
                 }
             } else if (profile.role === 'admin') {
-                // Admins shouldn't be here ideally, but if they are, show maybe all grades they've entered?
-                // The request says this is student/parent view, admins have /manage. We'll handle it nicely.
-                targetStudentIds = []; // We won't fetch everything by default to save bandwidth. Admin goes to Manage.
+                const { data } = await supabase.from('users').select('id, first_name, last_name').eq('role', 'student');
+                if (data && data.length > 0) {
+                    const kids = data.map((d: any) => ({
+                        id: d.id,
+                        name: `${d.last_name || ''} ${d.first_name || ''}`
+                    }));
+                    setConnectedStudents(kids);
+                    targetStudentIds = kids.map(k => k.id);
+                }
             }
 
             if (targetStudentIds.length > 0) {
@@ -194,7 +200,7 @@ export default function GradeInsightsPage() {
                             <Filter className="w-4 h-4" /> 絞り込み:
                         </div>
 
-                        {role === 'parent' && connectedStudents.length > 1 && (
+                        {(role === 'parent' || role === 'admin') && connectedStudents.length > 0 && (
                             <select
                                 className="bg-gray-50 dark:bg-gray-700 border-none text-sm font-bold rounded-lg focus:ring-lapis-500 py-2 px-3 text-gray-700 dark:text-gray-200"
                                 value={selectedStudentFilter}
@@ -231,9 +237,9 @@ export default function GradeInsightsPage() {
                             点数推移グラフ
                         </h2>
 
-                        {chartData.length < 2 ? (
+                        {chartData.length === 0 ? (
                             <div className="h-64 flex items-center justify-center text-gray-400 font-medium text-sm text-center">
-                                グラフを描画するには、同じ条件の成績データが2つ以上必要です。<br />(※絞り込みを変更してみてください)
+                                該当するデータがありません。<br />(※絞り込みを変更してみてください)
                             </div>
                         ) : (
                             <div className="h-80 w-full">

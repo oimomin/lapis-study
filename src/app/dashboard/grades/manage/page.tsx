@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Loader2, Plus, Edit2, Trash2, Calendar, FilePenLine, Search } from "lucide-react";
+import { Loader2, Plus, Edit2, Trash2, Calendar, FilePenLine, Search, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
