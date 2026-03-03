@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { Camera, Upload, X, CheckCircle, ArrowLeft, Loader2, Image as ImageIcon, BookOpen } from 'lucide-react';
+import { Camera, Upload, X, CheckCircle, ArrowLeft, Loader2, Image as ImageIcon, BookOpen, Clock, FileCheck, PenTool } from 'lucide-react';
 import Link from 'next/link';
 
 const SUBJECTS = [
@@ -14,6 +14,8 @@ export default function StandaloneHomeworkSubmitPage() {
     const router = useRouter();
     const supabase = createClient();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [history, setHistory] = useState<any[]>([]);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(true);
 
     // Form state
     const [subject, setSubject] = useState(SUBJECTS[0]);
@@ -27,6 +29,40 @@ export default function StandaloneHomeworkSubmitPage() {
 
     // File input ref
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        fetchHistory();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const fetchHistory = async () => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data, error } = await supabase
+                .from('homework_submissions')
+                .select(`
+                    id,
+                    status,
+                    created_at,
+                    subject,
+                    event_id,
+                    understanding_level,
+                    event:events(title)
+                `)
+                .eq('student_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(10); // Show recent 10
+
+            if (error) throw error;
+            setHistory(data || []);
+        } catch (error) {
+            console.error("Error fetching history:", error);
+        } finally {
+            setIsLoadingHistory(false);
+        }
+    };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files) return;
@@ -125,6 +161,7 @@ export default function StandaloneHomeworkSubmitPage() {
             // e.g. "生徒から自主勉強（○○）が提出されました！"
 
             setIsSuccess(true);
+            fetchHistory(); // Refresh history
         } catch (error) {
             console.error("Submission failed:", error);
             alert("提出に失敗しました。もう一度お試しください。");
@@ -283,6 +320,74 @@ export default function StandaloneHomeworkSubmitPage() {
                         )}
                     </button>
                 </div>
+            </div>
+
+            {/* Submission History Section */}
+            <div className="mt-12">
+                <h2 className="text-xl font-extrabold text-gray-900 mb-6 flex items-center gap-2">
+                    <FileCheck className="w-6 h-6 text-lapis-500" />
+                    過去の提出履歴
+                </h2>
+
+                {isLoadingHistory ? (
+                    <div className="flex justify-center p-8">
+                        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                    </div>
+                ) : history.length === 0 ? (
+                    <div className="bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm text-gray-500">
+                        まだ提出履歴がありません 📝
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="divide-y divide-gray-100">
+                            {history.map((sub) => {
+                                const title = sub.event?.title || sub.subject || '自主学習';
+                                const date = new Date(sub.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                                return (
+                                    <div key={sub.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50 transition-colors">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {sub.status === 'submitted' && (
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                                                        <Clock className="w-3 h-3" /> 未採点
+                                                    </span>
+                                                )}
+                                                {sub.status === 'graded' && (
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">
+                                                        <PenTool className="w-3 h-3" /> 採点完了・要確認
+                                                    </span>
+                                                )}
+                                                {sub.status === 'returned' && (
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+                                                        <CheckCircle className="w-3 h-3" /> 確認済み
+                                                    </span>
+                                                )}
+                                                <span className="text-xs text-gray-400">{date}</span>
+                                            </div>
+                                            <p className="font-bold text-gray-800">{title}</p>
+                                        </div>
+
+                                        {(sub.status === 'graded' || sub.status === 'returned') && (
+                                            <Link
+                                                href={`/dashboard/homework/feedback/${sub.id}`}
+                                                className={`
+                                                    whitespace-nowrap px-4 py-2 rounded-xl text-sm font-bold transition-colors text-center
+                                                    ${sub.status === 'graded'
+                                                        ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm'
+                                                        : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                                                    }
+                                                `}
+                                            >
+                                                {sub.status === 'graded' ? '結果を見る' : 'もう一度見る'}
+                                            </Link>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

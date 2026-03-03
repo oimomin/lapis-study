@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import MonthlySchedule from "@/components/dashboard/MonthlySchedule";
-import { AlertCircle, CalendarClock } from "lucide-react";
+import { AlertCircle, CalendarClock, PenTool } from "lucide-react";
+import Link from "next/link";
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -43,6 +44,24 @@ export default async function DashboardPage() {
 
     const safeEvents = error ? [] : upcomingEvents || [];
 
+    // Fetch graded homework for the student (alerts for un-reviewed feedback)
+    let pendingFeedbackSubmissions: any[] = [];
+    if (role === 'student' && user?.id) {
+        const { data: feedbackData } = await supabase
+            .from('homework_submissions')
+            .select(`
+                id,
+                subject,
+                created_at,
+                event:events(title)
+            `)
+            .eq('student_id', user.id)
+            .eq('status', 'graded')
+            .order('created_at', { ascending: false });
+
+        pendingFeedbackSubmissions = feedbackData || [];
+    }
+
     return (
         <div className="space-y-6 max-w-6xl mx-auto">
             <h1 className="text-2xl md:text-3xl font-extrabold text-lapis-900 dark:text-lapis-50">
@@ -62,6 +81,28 @@ export default async function DashboardPage() {
                         </div>
 
                         <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1">
+
+                            {/* Graded Homework Alerts */}
+                            {pendingFeedbackSubmissions.map(sub => (
+                                <div key={`feedback-${sub.id}`} className="p-3 border rounded-xl relative overflow-hidden bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-900/30">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-orange-400 dark:bg-orange-500"></div>
+                                    <p className="text-xs font-bold mb-1 flex items-center gap-1.5 text-orange-600 dark:text-orange-400">
+                                        <PenTool className="w-3.5 h-3.5" />
+                                        採点完了
+                                    </p>
+                                    <p className="font-bold text-sm text-gray-900 dark:text-gray-100 mb-2">
+                                        {sub.event?.title || sub.subject || '宿題'} の採点が完了しました！
+                                    </p>
+                                    <Link
+                                        href={`/dashboard/homework/feedback/${sub.id}`}
+                                        className="inline-block px-3 py-1.5 bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white text-[10px] font-bold rounded-lg shadow-sm transition-colors"
+                                    >
+                                        結果を見て評価する
+                                    </Link>
+                                </div>
+                            ))}
+
+                            {/* Upcoming Events */}
                             {safeEvents.length > 0 ? (
                                 safeEvents.map(event => {
                                     // Match calendar colors
@@ -128,9 +169,11 @@ export default async function DashboardPage() {
                                     );
                                 })
                             ) : (
-                                <p className="text-sm text-app-text2 dark:text-app-text2-dark text-center py-8">
-                                    直近の予定や新着のお知らせはありません🍒
-                                </p>
+                                pendingFeedbackSubmissions.length === 0 && (
+                                    <p className="text-sm text-app-text2 dark:text-app-text2-dark text-center py-8">
+                                        直近の予定や新着のお知らせはありません🍒
+                                    </p>
+                                )
                             )}
                         </div>
                     </div>
