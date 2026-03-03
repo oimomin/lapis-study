@@ -3,16 +3,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { Camera, Upload, X, CheckCircle, ArrowLeft, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, CheckCircle, ArrowLeft, Loader2, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HomeworkSubmitPage() {
     const params = useParams<{ eventId: string }>();
     const router = useRouter();
     const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [event, setEvent] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [user, setUser] = useState<any>(null);
 
     // Selected image files
@@ -142,7 +144,7 @@ export default function HomeworkSubmitPage() {
                 const fileName = `${user.id}/${event.id}/${Date.now()}_${i}.${fileExt}`;
 
                 // Upload to storage
-                const { error: uploadError, data: uploadData } = await supabase.storage
+                const { error: uploadError } = await supabase.storage
                     .from('homework_photos')
                     .upload(fileName, file);
 

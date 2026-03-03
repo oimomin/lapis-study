@@ -58,6 +58,7 @@ export default function Sidebar({ user, onClose }: { user: UserProfile, onClose:
         roleLinks = [
             { name: "ユーザー管理", href: "/dashboard/users", icon: Users },
             { name: "成績管理", href: "/dashboard/grades/manage", icon: FilePenLine },
+            { name: "宿題管理", href: "/dashboard/homework", icon: NotebookPen },
             { name: "契約管理", href: "/dashboard/contracts/manage", icon: FileSignature },
             { name: "新規契約", href: "/dashboard/contracts/new", icon: FileSignature },
         ];
