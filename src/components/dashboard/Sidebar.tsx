@@ -65,6 +65,7 @@ export default function Sidebar({ user, onClose }: { user: UserProfile, onClose:
     } else if (user.role === "parent") {
         roleLinks = [
             { name: "成績報告", href: "/dashboard/grades", icon: LineChart },
+            { name: "宿題確認", href: "/dashboard/homework/parent", icon: NotebookPen },
             { name: "契約確認", href: "/dashboard/contracts", icon: FileText },
             { name: "新規契約", href: "/dashboard/contracts/new", icon: FileSignature },
         ];

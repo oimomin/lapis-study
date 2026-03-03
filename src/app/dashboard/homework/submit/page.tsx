@@ -157,8 +157,24 @@ export default function StandaloneHomeworkSubmitPage() {
                     });
             }
 
-            // Optional: Create a notification for the admin 
-            // e.g. "生徒から自主勉強（○○）が提出されました！"
+            // 3. Create a notification for the admin
+            const { data: userData } = await supabase
+                .from('users')
+                .select('last_name, first_name')
+                .eq('id', user.id)
+                .single();
+
+            const studentName = userData
+                ? `${userData.last_name || ''} ${userData.first_name || ''}`.trim()
+                : '生徒';
+
+            await supabase.from('events').insert({
+                title: `${studentName}さんから宿題（${subject}）が提出されました`,
+                description: 'ダッシュボードの「宿題管理」から採点を行ってください。',
+                type: 'notice',
+                visibility: 'admin',
+                date: new Date().toISOString()
+            });
 
             setIsSuccess(true);
             fetchHistory(); // Refresh history
