@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import MonthlySchedule from "@/components/dashboard/MonthlySchedule";
-import { AlertCircle, CalendarClock, PenTool } from "lucide-react";
+import { AlertCircle, CalendarClock, PenTool, Megaphone } from "lucide-react";
 import Link from "next/link";
 
 export default async function DashboardPage() {
@@ -62,6 +62,25 @@ export default async function DashboardPage() {
         pendingFeedbackSubmissions = feedbackData || [];
     }
 
+    // Fetch latest 3 published notices
+    let validAudiences = ['all'];
+    if (role === 'student') validAudiences.push('students');
+    if (role === 'parent') validAudiences.push('parents');
+
+    let noticesQuery = supabase
+        .from('notices')
+        .select('*')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+    if (role !== 'admin') {
+        noticesQuery = noticesQuery.in('target_audience', validAudiences);
+    }
+
+    const { data: latestNotices, error: noticesError } = await noticesQuery;
+    const safeNotices = noticesError ? [] : latestNotices || [];
+
     return (
         <div className="space-y-6 max-w-6xl mx-auto">
             <h1 className="text-2xl md:text-3xl font-extrabold text-lapis-900 dark:text-lapis-50">
@@ -100,6 +119,23 @@ export default async function DashboardPage() {
                                         結果を見て評価する
                                     </Link>
                                 </div>
+                            ))}
+
+                            {/* Latest Notices */}
+                            {safeNotices.map((notice: any) => (
+                                <Link key={`notice-${notice.id}`} href="/dashboard/notices" className="block p-3 border rounded-xl relative overflow-hidden bg-indigo-50 dark:bg-indigo-900/10 border-indigo-200 dark:border-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/20 transition-colors">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-400 dark:bg-indigo-500"></div>
+                                    <p className="text-xs font-bold mb-1 flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+                                        <Megaphone className="w-3.5 h-3.5" />
+                                        お知らせ
+                                        <span className="text-[10px] font-medium ml-1 text-gray-500">
+                                            {new Date(notice.created_at).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                                        </span>
+                                    </p>
+                                    <p className="font-bold text-sm text-gray-900 dark:text-gray-100 truncate">
+                                        {notice.title}
+                                    </p>
+                                </Link>
                             ))}
 
                             {/* Upcoming Events */}
