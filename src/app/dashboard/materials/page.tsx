@@ -153,12 +153,14 @@ export default function MaterialsPage() {
 
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-8">
-            <div className="mb-8 text-center md:text-left">
-                <h1 className="text-2xl font-extrabold text-lapis-900 bg-clip-text text-transparent bg-gradient-to-r from-lapis-600 to-indigo-600 inline-block flex items-center gap-2 justify-center md:justify-start">
-                    <BookOpen className="w-6 h-6 text-lapis-500" />
-                    教材ライブラリ
-                </h1>
-                <p className="text-gray-500 text-sm mt-1 font-medium">先生から配られたプリントを見たり、ダウンロードしたりできます。</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-extrabold text-lapis-900 dark:text-lapis-50 flex items-center gap-3">
+                        <BookOpen className="w-8 h-8 text-lapis-600" />
+                        教材ライブラリ
+                    </h1>
+                    <p className="text-gray-500 text-sm mt-2 font-medium">先生から配られたプリントを見たり、ダウンロードしたりできます。</p>
+                </div>
             </div>
 
             {assignments.length === 0 ? (

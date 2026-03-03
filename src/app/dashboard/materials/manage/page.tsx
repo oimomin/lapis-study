@@ -93,11 +93,11 @@ export default function AdminMaterialsManagePage() {
         <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-2xl font-extrabold text-lapis-900 flex items-center gap-2">
-                        <BookOpen className="w-6 h-6 text-lapis-500" />
+                    <h1 className="text-2xl md:text-3xl font-extrabold text-lapis-900 dark:text-lapis-50 flex items-center gap-3">
+                        <BookOpen className="w-8 h-8 text-lapis-600" />
                         教材ライブラリ
                     </h1>
-                    <p className="text-gray-500 text-sm mt-1 font-medium">アップロードした教材の一覧と新しい教材の配布ができます</p>
+                    <p className="text-gray-500 text-sm mt-2 font-medium">アップロードした教材の一覧と新しい教材の配布ができます</p>
                 </div>
                 <Link
                     href="/dashboard/materials/new"
