@@ -18,7 +18,7 @@ export default function Header({
     user: UserProfile;
 }) {
     return (
-        <header className="sticky top-0 z-50 bg-white/70 dark:bg-[#0B1120]/70 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
+        <header className="sticky top-0 z-30 bg-white/70 dark:bg-[#0B1120]/70 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between px-4 py-3 lg:px-8">
 
                 {/* Mobile Hamburger & Logo Block */}

@@ -35,7 +35,7 @@ export default function GradeInsightsPage() {
     // Filters
     const [selectedStudentFilter, setSelectedStudentFilter] = useState<string>("all");
     const [selectedSubject, setSelectedSubject] = useState<string>("all");
-    const [selectedTestType, setSelectedTestType] = useState<string>("all");
+    const [selectedTestType, setSelectedTestType] = useState<string>("定期テスト");
 
     // Connected kids for parents
     const [connectedStudents, setConnectedStudents] = useState<{ id: string, name: string }[]>([]);
@@ -116,17 +116,33 @@ export default function GradeInsightsPage() {
         return true;
     });
 
-    // Chart Data Preparation (Reverse chronological so chart goes left->right chronologically)
-    const chartData = useMemo(() => {
+    // Chart Data Preparation (Group by Test Date)
+    const { chartData, dataKeys } = useMemo(() => {
+        // Sort chronologically
         const sorted = [...filteredGrades].sort((a, b) => new Date(a.test_date).getTime() - new Date(b.test_date).getTime());
-        return sorted.map(g => ({
-            name: new Date(g.test_date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }),
-            score: g.score,
-            subject: g.subject,
-            test_type: g.test_type,
-            fullDate: g.test_date
-        }));
-    }, [filteredGrades]);
+
+        // Group by date
+        const groupedByDate: Record<string, any> = {};
+        const keys = new Set<string>();
+
+        sorted.forEach(g => {
+            const dateStr = new Date(g.test_date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
+            if (!groupedByDate[dateStr]) {
+                groupedByDate[dateStr] = { name: dateStr, fullDate: g.test_date };
+            }
+            // Key is subject name (since testType is usually filtered, but if "all", it will combine them which the user wanted to avoid. 
+            // We'll append test_type to the key if selectedTestType is 'all'
+            const key = selectedTestType === 'all' ? `${g.subject} (${g.test_type})` : g.subject;
+            groupedByDate[dateStr][key] = g.score;
+            keys.add(key);
+        });
+
+        const finalData = Object.values(groupedByDate).sort((a, b) => new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime());
+        return { chartData: finalData, dataKeys: Array.from(keys) };
+    }, [filteredGrades, selectedTestType]);
+
+    // Color palette for chart lines
+    const colors = ['#4F46E5', '#EC4899', '#10B981', '#F59E0B', '#6366F1', '#8B5CF6', '#14B8A6'];
 
     if (isLoading) {
         return (
@@ -230,15 +246,19 @@ export default function GradeInsightsPage() {
                                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                             labelStyle={{ fontWeight: 'bold', color: '#111827', marginBottom: '4px' }}
                                         />
-                                        <Line
-                                            type="monotone"
-                                            dataKey="score"
-                                            name="点数"
-                                            stroke="#4F46E5"
-                                            strokeWidth={3}
-                                            dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
-                                            activeDot={{ r: 6, strokeWidth: 0, fill: '#4F46E5' }}
-                                        />
+                                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                        {dataKeys.map((key, index) => (
+                                            <Line
+                                                key={key}
+                                                type="monotone"
+                                                dataKey={key}
+                                                name={key}
+                                                stroke={colors[index % colors.length]}
+                                                strokeWidth={3}
+                                                dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
+                                                activeDot={{ r: 6, strokeWidth: 0, fill: colors[index % colors.length] }}
+                                            />
+                                        ))}
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
