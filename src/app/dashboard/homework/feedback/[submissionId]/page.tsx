@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { Loader2, ArrowLeft, CheckCircle, MessageSquare, Star, Circle, Triangle, Award } from 'lucide-react';
+import { Loader2, ArrowLeft, CheckCircle, MessageSquare, Star, Circle, Triangle, Award, Sparkles, ThumbsUp, Flame } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -239,8 +239,8 @@ export default function StudentFeedbackPage({ params }: { params: Promise<{ subm
                                         key={p.id}
                                         onClick={() => setCurrentPhotoIndex(index)}
                                         className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${currentPhotoIndex === index
-                                                ? 'border-lapis-500 opacity-100 shadow-md transform scale-105'
-                                                : 'border-transparent opacity-60 hover:opacity-100'
+                                            ? 'border-lapis-500 opacity-100 shadow-md transform scale-105'
+                                            : 'border-transparent opacity-60 hover:opacity-100'
                                             }`}
                                     >
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -263,9 +263,9 @@ export default function StudentFeedbackPage({ params }: { params: Promise<{ subm
                             <div className="py-4 text-center">
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">送信された自己評価</p>
                                 <div className="inline-flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl w-full">
-                                    {evaluation === 'excellent' && <div className="text-center"><Circle className="w-12 h-12 text-pink-500 mx-auto mb-2" /><span className="font-bold text-pink-600">◎ よくできた！</span></div>}
-                                    {evaluation === 'good' && <div className="text-center"><Circle className="w-12 h-12 text-green-500 mx-auto mb-2" /><span className="font-bold text-green-600">◯ できた</span></div>}
-                                    {evaluation === 'needs_work' && <div className="text-center"><Triangle className="w-12 h-12 text-blue-500 mx-auto mb-2 mt-1" /><span className="font-bold text-blue-600">△ いまひとつ</span></div>}
+                                    {evaluation === 'excellent' && <div className="text-center"><Sparkles className="w-12 h-12 text-pink-500 mx-auto mb-2" /><span className="font-bold text-pink-600">◎ よくできた！</span></div>}
+                                    {evaluation === 'good' && <div className="text-center"><ThumbsUp className="w-12 h-12 text-green-500 mx-auto mb-2" /><span className="font-bold text-green-600">◯ できた</span></div>}
+                                    {evaluation === 'needs_work' && <div className="text-center"><Flame className="w-12 h-12 text-blue-500 mx-auto mb-2" /><span className="font-bold text-blue-600">△ いまひとつ</span></div>}
                                 </div>
                             </div>
                         ) : (
@@ -278,15 +278,17 @@ export default function StudentFeedbackPage({ params }: { params: Promise<{ subm
                                     <button
                                         onClick={() => setEvaluation('excellent')}
                                         className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${evaluation === 'excellent'
-                                                ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-400 shadow-sm'
-                                                : 'border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-pink-200 hover:bg-pink-50/50'
+                                            ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-400 shadow-sm'
+                                            : 'border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-pink-200 hover:bg-pink-50/50'
                                             }`}
                                     >
                                         <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-900 flex items-center justify-center shadow-sm shrink-0">
-                                            <Circle className="w-5 h-5 text-pink-500" />
+                                            <Sparkles className="w-5 h-5 text-pink-500" />
                                         </div>
-                                        <div className="text-left">
-                                            <p className="font-bold text-sm">◎ よくできた！</p>
+                                        <div className="text-left flex-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className="font-bold text-sm">◎ よくできた！</p>
+                                            </div>
                                             <p className="text-[10px] opacity-80 mt-0.5">一人でスラスラ解けるレベル</p>
                                         </div>
                                     </button>
@@ -294,15 +296,17 @@ export default function StudentFeedbackPage({ params }: { params: Promise<{ subm
                                     <button
                                         onClick={() => setEvaluation('good')}
                                         className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${evaluation === 'good'
-                                                ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 shadow-sm'
-                                                : 'border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-green-200 hover:bg-green-50/50'
+                                            ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 shadow-sm'
+                                            : 'border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-green-200 hover:bg-green-50/50'
                                             }`}
                                     >
                                         <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-900 flex items-center justify-center shadow-sm shrink-0">
-                                            <Circle className="w-5 h-5 text-green-500" />
+                                            <ThumbsUp className="w-5 h-5 text-green-500" />
                                         </div>
-                                        <div className="text-left">
-                                            <p className="font-bold text-sm">◯ できた</p>
+                                        <div className="text-left flex-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className="font-bold text-sm">◯ できた</p>
+                                            </div>
                                             <p className="text-[10px] opacity-80 mt-0.5">解説を見れば理解できるレベル</p>
                                         </div>
                                     </button>
@@ -310,15 +314,17 @@ export default function StudentFeedbackPage({ params }: { params: Promise<{ subm
                                     <button
                                         onClick={() => setEvaluation('needs_work')}
                                         className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${evaluation === 'needs_work'
-                                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 shadow-sm'
-                                                : 'border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-blue-200 hover:bg-blue-50/50'
+                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 shadow-sm'
+                                            : 'border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-blue-200 hover:bg-blue-50/50'
                                             }`}
                                     >
                                         <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-900 flex items-center justify-center shadow-sm shrink-0">
-                                            <Triangle className="w-5 h-5 text-blue-500" />
+                                            <Flame className="w-5 h-5 text-blue-500" />
                                         </div>
-                                        <div className="text-left">
-                                            <p className="font-bold text-sm">△ いまひとつ</p>
+                                        <div className="text-left flex-1">
+                                            <div className="flex items-center justify-between">
+                                                <p className="font-bold text-sm">△ いまひとつ</p>
+                                            </div>
                                             <p className="text-[10px] opacity-80 mt-0.5">もう一度復習が必要なレベル</p>
                                         </div>
                                     </button>
@@ -328,8 +334,8 @@ export default function StudentFeedbackPage({ params }: { params: Promise<{ subm
                                     onClick={handleSubmitEvaluation}
                                     disabled={!evaluation || isSubmitting}
                                     className={`w-full py-3.5 rounded-xl font-bold flex items-center gap-2 justify-center transition-all ${evaluation
-                                            ? 'bg-lapis-600 hover:bg-lapis-700 text-white shadow-md active:scale-95'
-                                            : 'bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed'
+                                        ? 'bg-lapis-600 hover:bg-lapis-700 text-white shadow-md active:scale-95'
+                                        : 'bg-gray-200 text-gray-400 dark:bg-gray-700 dark:text-gray-500 cursor-not-allowed'
                                         }`}
                                 >
                                     {isSubmitting ? (
