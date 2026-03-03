@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { FileSignature, Search, ShieldCheck, CheckCircle2, XCircle, Activity, ChevronDown } from "lucide-react";
+import Link from "next/link";
+import { FileSignature, Search, ShieldCheck, CheckCircle2, XCircle, Activity, ChevronDown, CalendarPlus, X, Calendar as CalendarIcon, Clock, Plus } from "lucide-react";
 
 export default function AdminContractsPage() {
     const supabase = createClient();
+    const [user, setUser] = useState<any>(null);
     const [contracts, setContracts] = useState<any[]>([]);
     const [parents, setParents] = useState<any[]>([]);
     const [students, setStudents] = useState<any[]>([]);
@@ -13,6 +15,19 @@ export default function AdminContractsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [statusUpdateMessage, setStatusUpdateMessage] = useState<string | null>(null);
+
+    // Bulk Schedule Modal State
+    const [isBulkScheduleModalOpen, setIsBulkScheduleModalOpen] = useState(false);
+    const [selectedContract, setSelectedContract] = useState<any>(null);
+    const [isSubmittingSchedule, setIsSubmittingSchedule] = useState(false);
+    const [bulkScheduleForm, setBulkScheduleForm] = useState({
+        title: '',
+        dayOfWeek: '1', // 0: Sun, 1: Mon, ...
+        startDate: '',
+        endDate: '',
+        startTime: '',
+        endTime: '',
+    });
 
     // Filtering & Sorting State
     const [statusFilter, setStatusFilter] = useState("all");
@@ -27,6 +42,7 @@ export default function AdminContractsPage() {
             if (user?.user_metadata?.role !== 'admin') {
                 throw new Error("管理者権限が必要です。");
             }
+            setUser(user);
 
             // Fetch Contracts
             const { data: contractsData, error: contractsError } = await supabase
@@ -90,6 +106,80 @@ export default function AdminContractsPage() {
             setError("ステータスの更新に失敗しました。");
             // Revert on error
             setContracts(previousContracts);
+        }
+    };
+
+    const handleOpenBulkSchedule = (contract: any) => {
+        setSelectedContract(contract);
+        const today = new Date();
+        const nextMonth = new Date();
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+        setBulkScheduleForm({
+            title: '授業',
+            dayOfWeek: '1',
+            startDate: today.toISOString().split('T')[0],
+            endDate: nextMonth.toISOString().split('T')[0],
+            startTime: '17:00',
+            endTime: '18:00',
+        });
+        setIsBulkScheduleModalOpen(true);
+    };
+
+    const handleSubmitBulkSchedule = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmittingSchedule(true);
+        setError(null);
+        setStatusUpdateMessage(null);
+
+        try {
+            const start = new Date(bulkScheduleForm.startDate);
+            const end = new Date(bulkScheduleForm.endDate);
+            const targetDay = parseInt(bulkScheduleForm.dayOfWeek);
+
+            if (start > end) {
+                throw new Error("開始日は終了日より前に設定してください。");
+            }
+
+            const eventsToInsert = [];
+            const currentDate = new Date(start);
+
+            // Iterate through every day from start to end
+            while (currentDate <= end) {
+                if (currentDate.getDay() === targetDay) {
+                    const y = currentDate.getFullYear();
+                    const m = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    const d = String(currentDate.getDate()).padStart(2, '0');
+
+                    eventsToInsert.push({
+                        title: bulkScheduleForm.title,
+                        type: 'class',
+                        date: `${y}-${m}-${d}`,
+                        start_time: bulkScheduleForm.startTime,
+                        end_time: bulkScheduleForm.endTime,
+                        student_id: selectedContract.student_id,
+                        created_by: user.id
+                    });
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            if (eventsToInsert.length === 0) {
+                throw new Error("指定された期間内に該当する曜日がありません。");
+            }
+
+            const { error } = await supabase.from('events').insert(eventsToInsert);
+            if (error) throw error;
+
+            setStatusUpdateMessage(`${eventsToInsert.length}件の授業を一括登録しました。`);
+            setIsBulkScheduleModalOpen(false);
+            setTimeout(() => setStatusUpdateMessage(null), 4000);
+
+        } catch (err: any) {
+            console.error(err);
+            alert(err.message || "スケジュールの一括登録に失敗しました。");
+        } finally {
+            setIsSubmittingSchedule(false);
         }
     };
 
@@ -171,8 +261,15 @@ export default function AdminContractsPage() {
                         <option value="all">すべてのステータス</option>
                         <option value="active">利用中</option>
                         <option value="pending">手続き中</option>
-                        <option value="canceled">解約済</option>
                     </select>
+
+                    <Link
+                        href="/dashboard/contracts/new"
+                        className="flex items-center justify-center gap-2 bg-lapis-600 hover:bg-lapis-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-[0.98]"
+                    >
+                        <Plus className="w-4 h-4" />
+                        新規作成
+                    </Link>
                 </div>
             </div>
 
@@ -200,6 +297,7 @@ export default function AdminContractsPage() {
                                 <th className="p-4 whitespace-nowrap">契約プラン</th>
                                 <th className="p-4 whitespace-nowrap text-right">月額(+システム料)</th>
                                 <th className="p-4 whitespace-nowrap text-center">ステータス変更</th>
+                                <th className="p-4 whitespace-nowrap text-center">アクション</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800/50 text-sm">
@@ -248,6 +346,14 @@ export default function AdminContractsPage() {
                                                     <option value="terminated">強制終了</option>
                                                 </select>
                                             </td>
+                                            <td className="p-4 text-center">
+                                                <button
+                                                    onClick={() => handleOpenBulkSchedule(contract)}
+                                                    className="px-3 py-1.5 flex items-center justify-center gap-1.5 mx-auto bg-lapis-50 hover:bg-lapis-100 text-lapis-700 dark:bg-lapis-900/30 dark:hover:bg-lapis-900/50 dark:text-lapis-300 rounded-lg text-xs font-bold transition-colors"
+                                                >
+                                                    <CalendarPlus className="w-4 h-4" /> 授業登録
+                                                </button>
+                                            </td>
                                         </tr>
                                     );
                                 })
@@ -262,6 +368,132 @@ export default function AdminContractsPage() {
                 <span>※ステータスのドロップダウンを変更すると即座にデータベースに保存されます</span>
             </div>
 
+            {/* Bulk Schedule Modal */}
+            {isBulkScheduleModalOpen && selectedContract && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+                    onClick={() => setIsBulkScheduleModalOpen(false)}
+                >
+                    <div
+                        className="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-lapis-50 dark:bg-lapis-900/20">
+                            <h3 className="font-bold text-lg text-lapis-900 dark:text-lapis-100 flex items-center gap-2">
+                                <CalendarPlus className="w-5 h-5 text-lapis-600" />
+                                毎週の授業を一括登録
+                            </h3>
+                            <button onClick={() => setIsBulkScheduleModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmitBulkSchedule} className="p-6 space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 mb-1 block">対象生徒</label>
+                                <div className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-semibold">
+                                    {(() => {
+                                        const stu = students.find(s => s.id === selectedContract.student_id);
+                                        return stu ? `${stu.last_name} ${stu.first_name}` : '不明';
+                                    })()}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 mb-1 block">タイトル <span className="text-red-500">*</span></label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-black focus:ring-2 focus:ring-lapis-500 focus:outline-none"
+                                    value={bulkScheduleForm.title}
+                                    onChange={e => setBulkScheduleForm({ ...bulkScheduleForm, title: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 mb-1 block">曜日 <span className="text-red-500">*</span></label>
+                                <select
+                                    required
+                                    className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-black focus:ring-2 focus:ring-lapis-500 focus:outline-none"
+                                    value={bulkScheduleForm.dayOfWeek}
+                                    onChange={e => setBulkScheduleForm({ ...bulkScheduleForm, dayOfWeek: e.target.value })}
+                                >
+                                    <option value="0">日曜日</option>
+                                    <option value="1">月曜日</option>
+                                    <option value="2">火曜日</option>
+                                    <option value="3">水曜日</option>
+                                    <option value="4">木曜日</option>
+                                    <option value="5">金曜日</option>
+                                    <option value="6">土曜日</option>
+                                </select>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 mb-1 block">対象期間 (開始)</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-black focus:ring-2 focus:ring-lapis-500 focus:outline-none"
+                                        value={bulkScheduleForm.startDate}
+                                        onChange={e => setBulkScheduleForm({ ...bulkScheduleForm, startDate: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 mb-1 block">対象期間 (終了)</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-black focus:ring-2 focus:ring-lapis-500 focus:outline-none"
+                                        value={bulkScheduleForm.endDate}
+                                        onChange={e => setBulkScheduleForm({ ...bulkScheduleForm, endDate: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 mb-1 block">開始時間</label>
+                                    <input
+                                        type="time"
+                                        required
+                                        className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-black focus:ring-2 focus:ring-lapis-500 focus:outline-none"
+                                        value={bulkScheduleForm.startTime}
+                                        onChange={e => setBulkScheduleForm({ ...bulkScheduleForm, startTime: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500 mb-1 block">終了時間</label>
+                                    <input
+                                        type="time"
+                                        required
+                                        className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-black focus:ring-2 focus:ring-lapis-500 focus:outline-none"
+                                        value={bulkScheduleForm.endTime}
+                                        onChange={e => setBulkScheduleForm({ ...bulkScheduleForm, endTime: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <button
+                                    type="button"
+                                    className="flex-1 p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 font-bold transition-colors"
+                                    onClick={() => setIsBulkScheduleModalOpen(false)}
+                                >
+                                    キャンセル
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingSchedule}
+                                    className={`flex-1 p-3 rounded-xl bg-lapis-600 hover:bg-lapis-700 text-white font-bold transition-all shadow-md shadow-lapis-500/20 ${isSubmittingSchedule ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
+                                >
+                                    {isSubmittingSchedule ? '登録中...' : '一括登録する'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

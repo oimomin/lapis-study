@@ -73,22 +73,33 @@ export default function NewContractPage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            // Fetch family connections where parent_id is the current user
-            const { data: connections } = await supabase
-                .from('family_connections')
-                .select('student_id')
-                .eq('parent_id', user.id);
+            const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single();
 
-            if (connections && connections.length > 0) {
-                const studentIds = connections.map(conn => conn.student_id);
-
-                // Fetch the student details using the IDs
-                const { data: studentsData } = await supabase
+            if (profile?.role === 'admin') {
+                const { data: allStudents } = await supabase
                     .from('users')
                     .select('id, first_name, last_name, grade_level')
-                    .in('id', studentIds);
+                    .eq('role', 'student')
+                    .order('last_name', { ascending: true });
+                if (allStudents) setStudents(allStudents);
+            } else {
+                // Fetch family connections where parent_id is the current user
+                const { data: connections } = await supabase
+                    .from('family_connections')
+                    .select('student_id')
+                    .eq('parent_id', user.id);
 
-                if (studentsData) setStudents(studentsData);
+                if (connections && connections.length > 0) {
+                    const studentIds = connections.map(conn => conn.student_id);
+
+                    // Fetch the student details using the IDs
+                    const { data: studentsData } = await supabase
+                        .from('users')
+                        .select('id, first_name, last_name, grade_level')
+                        .in('id', studentIds);
+
+                    if (studentsData) setStudents(studentsData);
+                }
             }
         };
         fetchStudents();
@@ -104,10 +115,8 @@ export default function NewContractPage() {
         const isThirdGrade = selectedStudent.grade_level === "中3";
         let base = 0;
 
-        if (selectedSubjects.length === 1) {
-            base = isThirdGrade ? 13000 : 10000;
-        } else if (selectedSubjects.length >= 2) {
-            base = isThirdGrade ? 26000 : 20000;
+        if (selectedSubjects.length > 0) {
+            base = (isThirdGrade ? 13000 : 10000) * selectedSubjects.length;
         }
 
         const admission = contractType === "annual" ? 3300 : 0;
@@ -175,7 +184,7 @@ export default function NewContractPage() {
             </h1>
 
             {/* Stepper UI */}
-            <div className="flex items-center justify-between mb-8 relative">
+            <div className="w-full flex justify-between items-center mb-8 relative px-2">
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 dark:bg-gray-800 rounded-full -z-10"></div>
                 <div
                     className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-lapis-500 rounded-full -z-10 transition-all duration-300"
@@ -183,16 +192,19 @@ export default function NewContractPage() {
                 ></div>
 
                 {['生徒選択', 'コース・料金', '規約同意', '電子署名'].map((label, i) => (
-                    <div key={i} className="flex flex-col items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mb-2 ${step > i ? 'bg-lapis-500 text-white' : step === i + 1 ? 'bg-white border-2 border-lapis-500 text-lapis-600' : 'bg-gray-100 text-gray-400 border-2 border-transparent'}`}>
+                    <div key={i} className="flex flex-col items-center relative gap-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${step > i ? 'bg-lapis-500 text-white ring-4 ring-white dark:ring-black/30' : step === i + 1 ? 'bg-white border-2 border-lapis-500 text-lapis-600 ring-4 ring-white dark:ring-black/30' : 'bg-gray-100 text-gray-400 border-2 border-transparent ring-4 ring-white dark:ring-black/30'}`}>
                             {step > i + 1 ? '✓' : i + 1}
                         </div>
-                        <span className={`text-xs font-medium ${step >= i + 1 ? 'text-lapis-900 dark:text-lapis-100' : 'text-gray-400'}`}>
+                        <span className={`absolute top-10 whitespace-nowrap text-[10px] md:text-xs font-medium ${step >= i + 1 ? 'text-lapis-900 dark:text-lapis-100' : 'text-gray-400'}`}>
                             {label}
                         </span>
                     </div>
                 ))}
             </div>
+
+            {/* Added a spacer since the labels are absolutely positioned */}
+            <div className="h-6"></div>
 
             <div className="bg-white/60 dark:bg-black/40 border border-gray-200 dark:border-gray-800 p-6 md:p-8 rounded-2xl shadow-sm backdrop-blur-xl">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

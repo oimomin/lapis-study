@@ -1,4 +1,5 @@
 -- Create family_connections table
+drop table if exists public.family_connections cascade;
 create table public.family_connections (
   id uuid default gen_random_uuid() primary key,
   parent_id uuid references public.users(id) on delete cascade not null,

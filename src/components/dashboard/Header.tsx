@@ -19,10 +19,10 @@ export default function Header({
 }) {
     return (
         <header className="sticky top-0 z-10 bg-white/70 dark:bg-[#0B1120]/70 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center justify-between px-4 py-3 md:px-8">
+            <div className="flex items-center justify-between px-4 py-3 lg:px-8">
 
                 {/* Mobile Hamburger & Logo Block */}
-                <div className="flex items-center gap-4 md:hidden">
+                <div className="flex items-center gap-4 lg:hidden">
                     <button
                         onClick={onOpenSidebar}
                         className="p-2 -ml-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
@@ -36,7 +36,7 @@ export default function Header({
                 </div>
 
                 {/* Desktop Search / Breadcrumbs area (hidden on mobile) */}
-                <div className="hidden md:flex flex-1 max-w-md">
+                <div className="hidden lg:flex flex-1 max-w-md">
                     <div className="relative w-full">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Search className="h-5 w-5 text-gray-400" />
@@ -57,7 +57,7 @@ export default function Header({
                     </button>
 
                     {/* User Profile Mini (Mobile) */}
-                    <div className="md:hidden w-8 h-8 rounded-full bg-lapis-200 dark:bg-lapis-900 flex items-center justify-center text-lapis-700 dark:text-lapis-300 font-bold overflow-hidden border border-gray-200 dark:border-gray-700">
+                    <div className="lg:hidden w-8 h-8 rounded-full bg-lapis-200 dark:bg-lapis-900 flex items-center justify-center text-lapis-700 dark:text-lapis-300 font-bold overflow-hidden border border-gray-200 dark:border-gray-700">
                         {user.avatar_url ? (
                             <Image src={user.avatar_url} alt="User Avatar" width={32} height={32} className="w-full h-full object-cover" />
                         ) : (
