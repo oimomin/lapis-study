@@ -95,9 +95,9 @@ export default function AdminMaterialsManagePage() {
                 <div>
                     <h1 className="text-2xl font-extrabold text-lapis-900 flex items-center gap-2">
                         <BookOpen className="w-6 h-6 text-lapis-500" />
-                        配布教材の管理
+                        教材ライブラリ
                     </h1>
-                    <p className="text-gray-500 text-sm mt-1 font-medium">生徒へプリントや学習用画像を配布できます</p>
+                    <p className="text-gray-500 text-sm mt-1 font-medium">アップロードした教材の一覧と新しい教材の配布ができます</p>
                 </div>
                 <Link
                     href="/dashboard/materials/new"

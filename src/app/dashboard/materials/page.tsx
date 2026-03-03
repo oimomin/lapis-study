@@ -156,7 +156,7 @@ export default function MaterialsPage() {
             <div className="mb-8 text-center md:text-left">
                 <h1 className="text-2xl font-extrabold text-lapis-900 bg-clip-text text-transparent bg-gradient-to-r from-lapis-600 to-indigo-600 inline-block flex items-center gap-2 justify-center md:justify-start">
                     <BookOpen className="w-6 h-6 text-lapis-500" />
-                    配布プリント・教材
+                    教材ライブラリ
                 </h1>
                 <p className="text-gray-500 text-sm mt-1 font-medium">先生から配られたプリントを見たり、ダウンロードしたりできます。</p>
             </div>
