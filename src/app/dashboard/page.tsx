@@ -92,15 +92,48 @@ export default async function DashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* News & Progress */}
-                <div className="md:col-span-1 space-y-6">
-                    <div className="p-6 rounded-2xl bg-white/60 dark:bg-black/40 border border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-xl h-full flex flex-col">
+                <div className="md:col-span-1 space-y-6 flex flex-col">
+                    {/* Notices Card */}
+                    <div className="p-6 rounded-2xl bg-white/60 dark:bg-black/40 border border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-xl flex flex-col max-h-[400px]">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <Megaphone className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">お知らせ</h3>
+                            </div>
+                            <Link href="/dashboard/notices" className="text-xs font-bold text-lapis-500 hover:text-lapis-600">
+                                すべて見る
+                            </Link>
+                        </div>
+                        <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1">
+                            {safeNotices.length > 0 ? (
+                                safeNotices.map((notice: any) => (
+                                    <Link key={`notice-${notice.id}`} href="/dashboard/notices" className="block p-3 border rounded-xl relative overflow-hidden bg-indigo-50 dark:bg-indigo-900/10 border-indigo-200 dark:border-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/20 transition-colors">
+                                        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-400 dark:bg-indigo-500"></div>
+                                        <p className="text-xs font-bold mb-1 flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+                                            <Megaphone className="w-3.5 h-3.5" />
+                                            {new Date(notice.created_at).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                                        </p>
+                                        <p className="font-bold text-sm text-gray-900 dark:text-gray-100 truncate">
+                                            {notice.title}
+                                        </p>
+                                    </Link>
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                                    新しいお知らせはありません
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Events & Deadlines Card */}
+                    <div className="p-6 rounded-2xl bg-white/60 dark:bg-black/40 border border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-xl flex-1 flex flex-col min-h-[300px]">
                         <div className="flex items-center gap-2 mb-4">
-                            <AlertCircle className="w-5 h-5 text-lapis-600 dark:text-lapis-400" />
-                            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">お知らせ・期限</h3>
+                            <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">予定・期限</h3>
                         </div>
 
                         <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1">
-
                             {/* Graded Homework Alerts */}
                             {pendingFeedbackSubmissions.map(sub => (
                                 <div key={`feedback-${sub.id}`} className="p-3 border rounded-xl relative overflow-hidden bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-900/30">
@@ -119,23 +152,6 @@ export default async function DashboardPage() {
                                         結果を見て評価する
                                     </Link>
                                 </div>
-                            ))}
-
-                            {/* Latest Notices */}
-                            {safeNotices.map((notice: any) => (
-                                <Link key={`notice-${notice.id}`} href="/dashboard/notices" className="block p-3 border rounded-xl relative overflow-hidden bg-indigo-50 dark:bg-indigo-900/10 border-indigo-200 dark:border-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/20 transition-colors">
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-400 dark:bg-indigo-500"></div>
-                                    <p className="text-xs font-bold mb-1 flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
-                                        <Megaphone className="w-3.5 h-3.5" />
-                                        お知らせ
-                                        <span className="text-[10px] font-medium ml-1 text-gray-500">
-                                            {new Date(notice.created_at).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
-                                        </span>
-                                    </p>
-                                    <p className="font-bold text-sm text-gray-900 dark:text-gray-100 truncate">
-                                        {notice.title}
-                                    </p>
-                                </Link>
                             ))}
 
                             {/* Upcoming Events */}
@@ -207,7 +223,7 @@ export default async function DashboardPage() {
                             ) : (
                                 pendingFeedbackSubmissions.length === 0 && (
                                     <p className="text-sm text-app-text2 dark:text-app-text2-dark text-center py-8">
-                                        直近の予定や新着のお知らせはありません🍒
+                                        直近の予定や期限はありません🍒
                                     </p>
                                 )
                             )}
