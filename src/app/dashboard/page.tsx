@@ -1,5 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import MonthlySchedule from "@/components/dashboard/MonthlySchedule";
+import StudentProgressWidget from "@/components/dashboard/StudentProgressWidget";
+import AdminActivityWidget from "@/components/dashboard/AdminActivityWidget";
 import { AlertCircle, CalendarClock, PenTool, Megaphone } from "lucide-react";
 import Link from "next/link";
 
@@ -231,8 +233,22 @@ export default async function DashboardPage() {
                     </div>
                 </div>
 
-                <div className="md:col-span-2">
+                <div className="md:col-span-2 space-y-6">
                     <MonthlySchedule />
+
+                    {/* Progress Widget for Students/Parents */}
+                    {role !== 'admin' && user?.id && (
+                        <div className="mt-6">
+                            <StudentProgressWidget studentId={user.id} />
+                        </div>
+                    )}
+
+                    {/* Activity Widget for Admins */}
+                    {role === 'admin' && (
+                        <div className="mt-6">
+                            <AdminActivityWidget />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
