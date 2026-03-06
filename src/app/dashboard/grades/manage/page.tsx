@@ -52,6 +52,7 @@ export default function AdminGradesManagePage() {
             if (error) throw error;
 
             // Format count
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const formattedData = data.map((d: any) => ({
                 ...d,
                 _count: { images: d.images[0]?.count || 0 }

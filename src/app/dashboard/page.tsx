@@ -47,6 +47,7 @@ export default async function DashboardPage() {
     const safeEvents = error ? [] : upcomingEvents || [];
 
     // Fetch graded homework for the student (alerts for un-reviewed feedback)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let pendingFeedbackSubmissions: any[] = [];
     if (role === 'student' && user?.id) {
         const { data: feedbackData } = await supabase
@@ -65,7 +66,7 @@ export default async function DashboardPage() {
     }
 
     // Fetch latest 3 published notices
-    let validAudiences = ['all'];
+    const validAudiences = ['all'];
     if (role === 'student') validAudiences.push('students');
     if (role === 'parent') validAudiences.push('parents');
 
@@ -108,6 +109,7 @@ export default async function DashboardPage() {
                         </div>
                         <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1">
                             {safeNotices.length > 0 ? (
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 safeNotices.map((notice: any) => (
                                     <Link key={`notice-${notice.id}`} href="/dashboard/notices" className="block p-3 border rounded-xl relative overflow-hidden bg-indigo-50 dark:bg-indigo-900/10 border-indigo-200 dark:border-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/20 transition-colors">
                                         <div className="absolute top-0 left-0 w-1 h-full bg-indigo-400 dark:bg-indigo-500"></div>

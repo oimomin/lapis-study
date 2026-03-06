@@ -26,6 +26,7 @@ export default function MonthlySchedule() {
     const [events, setEvents] = useState<ScheduleEvent[]>([]);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [role, setRole] = useState<string>('student');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [user, setUser] = useState<any>(null);
 
     // Modal state

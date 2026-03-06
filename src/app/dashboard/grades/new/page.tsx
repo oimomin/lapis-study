@@ -20,6 +20,7 @@ export default function GradeUploadPage() {
     const supabase = createClient();
     const router = useRouter();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [user, setUser] = useState<any>(null);
     const [role, setRole] = useState<string>('student');
     const [assignableUsers, setAssignableUsers] = useState<{ id: string, name: string }[]>([]);
@@ -69,6 +70,7 @@ export default function GradeUploadPage() {
                             .select('student:student_id(id, first_name, last_name)')
                             .eq('parent_id', user.id);
                         if (data) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const children = data.map((d: any) => ({
                                 id: d.student.id,
                                 name: `${d.student.last_name || ''} ${d.student.first_name || ''}`
@@ -203,6 +205,7 @@ export default function GradeUploadPage() {
                 router.push(redirectPath);
             }, 2000);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("Submission error:", error);
             alert("エラーが発生しました: " + error.message);

@@ -3,14 +3,41 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
-import { FileSignature, Search, ShieldCheck, CheckCircle2, XCircle, Activity, ChevronDown, CalendarPlus, X, Calendar as CalendarIcon, Clock, Plus } from "lucide-react";
+import { Search, ShieldCheck, CheckCircle2, CalendarPlus, X, Plus } from "lucide-react";
+import { ContractDownloadButton } from "@/components/contracts/ContractDownloadButton";
+
+type ContractRecord = {
+    id: string;
+    status: string;
+    parent_id: string;
+    student_id: string;
+    created_at: string;
+    contract_type: "trial" | "annual" | "pending" | "canceled";
+    subjects: string[];
+    monthly_fee: number;
+    system_fee: number;
+    admission_fee: number;
+    parent_signature_name: string;
+    ip_address: string;
+    terms_snapshot: string;
+    privacy_snapshot: string;
+    contract_snapshot: string;
+};
+
+type UserRecord = {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email?: string;
+    grade_level?: string;
+};
 
 export default function AdminContractsPage() {
     const supabase = createClient();
-    const [user, setUser] = useState<any>(null);
-    const [contracts, setContracts] = useState<any[]>([]);
-    const [parents, setParents] = useState<any[]>([]);
-    const [students, setStudents] = useState<any[]>([]);
+    const [user, setUser] = useState<{ id: string } | null>(null);
+    const [contracts, setContracts] = useState<ContractRecord[]>([]);
+    const [parents, setParents] = useState<UserRecord[]>([]);
+    const [students, setStudents] = useState<UserRecord[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -18,7 +45,7 @@ export default function AdminContractsPage() {
 
     // Bulk Schedule Modal State
     const [isBulkScheduleModalOpen, setIsBulkScheduleModalOpen] = useState(false);
-    const [selectedContract, setSelectedContract] = useState<any>(null);
+    const [selectedContract, setSelectedContract] = useState<ContractRecord | null>(null);
     const [isSubmittingSchedule, setIsSubmittingSchedule] = useState(false);
     const [bulkScheduleForm, setBulkScheduleForm] = useState({
         title: '',
@@ -67,9 +94,9 @@ export default function AdminContractsPage() {
                 if (studentsRes.data) setStudents(studentsRes.data);
             }
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("契約情報の取得に失敗しました:", err);
-            setError(err.message || "データの取得に失敗しました。");
+            setError(err instanceof Error ? err.message : "データの取得に失敗しました。");
         } finally {
             setIsLoading(false);
         }
@@ -77,6 +104,7 @@ export default function AdminContractsPage() {
 
     useEffect(() => {
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [supabase]);
 
     const handleStatusChange = async (contractId: string, newStatus: string) => {
@@ -101,7 +129,7 @@ export default function AdminContractsPage() {
             // Clear message after 3 seconds
             setTimeout(() => setStatusUpdateMessage(null), 3000);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
             setError("ステータスの更新に失敗しました。");
             // Revert on error
@@ -109,7 +137,7 @@ export default function AdminContractsPage() {
         }
     };
 
-    const handleOpenBulkSchedule = (contract: any) => {
+    const handleOpenBulkSchedule = (contract: ContractRecord) => {
         setSelectedContract(contract);
         const today = new Date();
         const nextMonth = new Date();
@@ -139,6 +167,10 @@ export default function AdminContractsPage() {
 
             if (start > end) {
                 throw new Error("開始日は終了日より前に設定してください。");
+            }
+
+            if (!selectedContract || !user) {
+                throw new Error("必要な情報が不足しています。");
             }
 
             const eventsToInsert = [];
@@ -175,26 +207,15 @@ export default function AdminContractsPage() {
             setIsBulkScheduleModalOpen(false);
             setTimeout(() => setStatusUpdateMessage(null), 4000);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            alert(err.message || "スケジュールの一括登録に失敗しました。");
+            alert(err instanceof Error ? err.message : "スケジュールの一括登録に失敗しました。");
         } finally {
             setIsSubmittingSchedule(false);
         }
     };
 
     // Derived Data
-    const getStatusLabel = (status: string) => {
-        switch (status) {
-            case 'active': return '利用中 (Active)';
-            case 'pending': return '手続き中 (Pending)';
-            case 'completed': return '満了 (Completed)';
-            case 'canceled': return '解約済 (Canceled)';
-            case 'terminated': return '強制終了 (Terminated)';
-            default: return status;
-        }
-    };
-
     const getStatusStyle = (status: string) => {
         switch (status) {
             case 'active': return 'bg-success-100 text-success-800 border-success-200 dark:bg-success-900/30 dark:text-success-300 dark:border-success-800';
@@ -347,12 +368,33 @@ export default function AdminContractsPage() {
                                                 </select>
                                             </td>
                                             <td className="p-4 text-center">
-                                                <button
-                                                    onClick={() => handleOpenBulkSchedule(contract)}
-                                                    className="px-3 py-1.5 flex items-center justify-center gap-1.5 mx-auto bg-lapis-50 hover:bg-lapis-100 text-lapis-700 dark:bg-lapis-900/30 dark:hover:bg-lapis-900/50 dark:text-lapis-300 rounded-lg text-xs font-bold transition-colors"
-                                                >
-                                                    <CalendarPlus className="w-4 h-4" /> 授業登録
-                                                </button>
+                                                <div className="flex flex-col gap-2 w-max mx-auto">
+                                                    <button
+                                                        onClick={() => handleOpenBulkSchedule(contract)}
+                                                        className="px-3 py-1.5 flex items-center justify-center gap-1.5 w-full bg-lapis-50 hover:bg-lapis-100 text-lapis-700 dark:bg-lapis-900/30 dark:hover:bg-lapis-900/50 dark:text-lapis-300 rounded-lg text-xs font-bold transition-colors"
+                                                    >
+                                                        <CalendarPlus className="w-4 h-4" /> 授業登録
+                                                    </button>
+                                                    <ContractDownloadButton
+                                                        data={{
+                                                            contractType: contract.contract_type,
+                                                            studentName: student ? `${student.last_name} ${student.first_name}` : '生徒氏名',
+                                                            parentName: contract.parent_signature_name || '保護者氏名',
+                                                            signatureName: contract.parent_signature_name || '署名済',
+                                                            subjects: contract.subjects || [],
+                                                            monthlyFee: contract.monthly_fee || 0,
+                                                            admissionFee: contract.admission_fee || 0,
+                                                            systemFee: contract.system_fee || 0,
+                                                            signedAt: contract.created_at,
+                                                            ipAddress: contract.ip_address || "記録なし",
+                                                            termsSnapshot: contract.terms_snapshot,
+                                                            privacySnapshot: contract.privacy_snapshot,
+                                                        }}
+                                                        fileName={`LapisStudy_指導受託契約書_${student ? student.first_name : '控'}.pdf`}
+                                                        className="px-3 py-1.5 flex items-center justify-center gap-1.5 w-full bg-gray-50 hover:bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:hover:bg-gray-800 dark:text-gray-300 rounded-lg text-xs font-bold transition-colors"
+                                                        label="PDF控"
+                                                    />
+                                                </div>
                                             </td>
                                         </tr>
                                     );

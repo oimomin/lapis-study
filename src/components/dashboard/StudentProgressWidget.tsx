@@ -197,6 +197,7 @@ export default function StudentProgressWidget({ studentId }: StudentProgressWidg
                                                 ))}
                                             </Pie>
                                             <Tooltip
+                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                                 formatter={(value: any) => [`${value}回`, '回数']}
                                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
                                                 itemStyle={{ color: '#111827' }}

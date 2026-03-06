@@ -27,6 +27,7 @@ interface AppEvent {
 
 export default function SchedulePage() {
     const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [user, setUser] = useState<any>(null);
     const [role, setRole] = useState<string>('student');
     const [events, setEvents] = useState<AppEvent[]>([]);
@@ -101,6 +102,7 @@ export default function SchedulePage() {
                             .select('student:student_id(id, first_name, last_name)')
                             .eq('parent_id', user.id);
                         if (data) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             setAssignableUsers(data.map((d: any) => ({
                                 id: d.student.id,
                                 name: `[生徒] ${d.student.last_name || ''} ${d.student.first_name || ''}`,
@@ -220,6 +222,7 @@ export default function SchedulePage() {
         e.preventDefault();
 
         // Prepare base payload
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const payload: any = {
             title: formData.title,
             type: formData.type,

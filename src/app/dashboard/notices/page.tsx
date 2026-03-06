@@ -35,7 +35,7 @@ export default function NoticesPage() {
             if (!profile) return;
 
             // Determine what audience this user falls under
-            let validAudiences = ['all'];
+            const validAudiences = ['all'];
             if (profile.role === 'student') validAudiences.push('students');
             if (profile.role === 'parent') validAudiences.push('parents');
 

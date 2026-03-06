@@ -28,6 +28,7 @@ type GradeRecord = {
 export default function GradeInsightsPage() {
     const supabase = createClient();
     const [isLoading, setIsLoading] = useState(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [user, setUser] = useState<any>(null);
     const [role, setRole] = useState<string>('student');
     const [grades, setGrades] = useState<GradeRecord[]>([]);
@@ -69,6 +70,7 @@ export default function GradeInsightsPage() {
                     .eq('parent_id', user.id);
 
                 if (data && data.length > 0) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const kids = data.map((d: any) => ({
                         id: d.student_id,
                         name: `${d.student.last_name} ${d.student.first_name}`
@@ -79,6 +81,7 @@ export default function GradeInsightsPage() {
             } else if (profile.role === 'admin') {
                 const { data } = await supabase.from('users').select('id, first_name, last_name').eq('role', 'student');
                 if (data && data.length > 0) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const kids = data.map((d: any) => ({
                         id: d.id,
                         name: `${d.last_name || ''} ${d.first_name || ''}`
@@ -128,6 +131,7 @@ export default function GradeInsightsPage() {
         const sorted = [...filteredGrades].sort((a, b) => new Date(a.test_date).getTime() - new Date(b.test_date).getTime());
 
         // Group by date
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const groupedByDate: Record<string, any> = {};
         const keys = new Set<string>();
 

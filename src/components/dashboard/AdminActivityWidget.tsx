@@ -14,6 +14,7 @@ type ActivityItem = {
     description: string;
     date: Date;
     link: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     icon: any;
     colorClass: string;
     bgColorClass: string;
@@ -60,7 +61,7 @@ export default function AdminActivityWidget() {
                 .order('created_at', { ascending: false })
                 .limit(10);
 
-            let allActivities: ActivityItem[] = [];
+            const allActivities: ActivityItem[] = [];
 
             // Process Homework Data
             if (homeworkData) {

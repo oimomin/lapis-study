@@ -24,6 +24,7 @@ interface TodoEvent {
 
 export default function TodosPage() {
     const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [user, setUser] = useState<any>(null);
     const [role, setRole] = useState<string>('student');
     const [todos, setTodos] = useState<TodoEvent[]>([]);
@@ -54,6 +55,7 @@ export default function TodosPage() {
                         const { data } = await supabase.from('family_connections')
                             .select('student:student_id(id, first_name, last_name)')
                             .eq('parent_id', user.id);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         if (data) setStudents(data.map((d: any) => ({ id: d.student.id, name: `${d.student.last_name || ''} ${d.student.first_name || ''}` })));
                     }
                 }

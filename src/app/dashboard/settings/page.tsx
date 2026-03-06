@@ -6,7 +6,9 @@ import { Settings as SettingsIcon, User, Moon, Sun, Monitor, Shield, LogOut, Che
 
 export default function SettingsPage() {
     const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [user, setUser] = useState<any>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [profile, setProfile] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -73,6 +75,7 @@ export default function SettingsPage() {
 
             setMessage({ type: 'success', text: "プロフィールを更新しました。" });
             setTimeout(() => setMessage(null), 3000);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("更新エラー:", error);
             setMessage({ type: 'error', text: "更新に失敗しました。もう一度お試しください。" });

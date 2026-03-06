@@ -79,6 +79,7 @@ export default function SignUpPage() {
     const currentRole = watch("role");
 
     const validateStepAndProceed = async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let fieldsToValidate: any[] = [];
         if (step === 1) fieldsToValidate = ["email", "password"];
         if (step === 2) {
@@ -273,6 +274,7 @@ export default function SignUpPage() {
                                 ].map((r) => (
                                     <div
                                         key={r.id}
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         onClick={() => setValue("role", r.id as any, { shouldValidate: true })}
                                         className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${currentRole === r.id
                                             ? "border-lapis-500 bg-lapis-500/10 dark:bg-lapis-500/20"

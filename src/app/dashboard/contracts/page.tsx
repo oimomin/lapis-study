@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { FileSignature, Download, Calendar, Activity, CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
+import { FileSignature, Download, Calendar, Activity, CheckCircle2, XCircle, FileText, ShieldCheck } from "lucide-react";
+import { ContractDownloadButton } from "@/components/contracts/ContractDownloadButton";
 
 export default function ParentContractsPage() {
     const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [contracts, setContracts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,12 @@ export default function ParentContractsPage() {
                         system_fee,
                         status,
                         created_at,
-                        student_id
+                        student_id,
+                        parent_signature_name,
+                        ip_address,
+                        contract_snapshot,
+                        terms_snapshot,
+                        privacy_snapshot
                     `)
                     .eq('parent_id', user.id)
                     .order('created_at', { ascending: false });
@@ -60,6 +67,7 @@ export default function ParentContractsPage() {
                     setContracts([]);
                 }
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 console.error("契約情報の取得に失敗しました:", err);
                 setError(err.message || "データの取得に失敗しました。");
@@ -156,13 +164,71 @@ export default function ParentContractsPage() {
                                             契約日: {new Date(contract.created_at).toLocaleDateString('ja-JP')}
                                         </p>
                                     </div>
-                                    <button
-                                        className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors text-sm font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap"
-                                        onClick={() => alert("PDF生成機能は準備中です。")}
-                                    >
-                                        <Download className="w-4 h-4" />
-                                        控（PDF）をダウンロード
-                                    </button>
+                                    <div className="flex flex-col gap-2 min-w-[200px] mt-4 sm:mt-0">
+                                        <ContractDownloadButton
+                                            type="contract"
+                                            data={{
+                                                contractType: contract.contract_type,
+                                                studentName: contract.student ? `${contract.student.last_name} ${contract.student.first_name}` : '生徒氏名',
+                                                parentName: contract.parent_signature_name || '保護者氏名',
+                                                signatureName: contract.parent_signature_name || '署名済',
+                                                subjects: contract.subjects || [],
+                                                monthlyFee: contract.monthly_fee || 0,
+                                                admissionFee: contract.admission_fee || 0,
+                                                systemFee: contract.system_fee || 0,
+                                                signedAt: contract.created_at,
+                                                ipAddress: contract.ip_address || "記録なし",
+                                                termsSnapshot: contract.terms_snapshot,
+                                                privacySnapshot: contract.privacy_snapshot,
+                                                contractSnapshot: contract.contract_snapshot,
+                                            }}
+                                            fileName={`LapisStudy_指導受託契約書_${contract.student ? contract.student.first_name : '控'}.pdf`}
+                                            label="契約書をダウンロード"
+                                            className="w-full flex justify-center items-center gap-2 px-3 py-2 bg-lapis-600 hover:bg-lapis-700 text-white rounded-lg transition-colors font-bold text-xs"
+                                        />
+                                        <ContractDownloadButton
+                                            type="terms"
+                                            data={{
+                                                contractType: contract.contract_type,
+                                                studentName: contract.student ? `${contract.student.last_name} ${contract.student.first_name}` : '生徒氏名',
+                                                parentName: contract.parent_signature_name || '保護者氏名',
+                                                signatureName: contract.parent_signature_name || '署名済',
+                                                subjects: contract.subjects || [],
+                                                monthlyFee: contract.monthly_fee || 0,
+                                                admissionFee: contract.admission_fee || 0,
+                                                systemFee: contract.system_fee || 0,
+                                                signedAt: contract.created_at,
+                                                ipAddress: contract.ip_address || "記録なし",
+                                                termsSnapshot: contract.terms_snapshot,
+                                                privacySnapshot: contract.privacy_snapshot,
+                                                contractSnapshot: contract.contract_snapshot,
+                                            }}
+                                            fileName={`システム利用規約_${contract.student ? contract.student.first_name : '控'}.pdf`}
+                                            label="利用規約をダウンロード"
+                                            className="w-full flex justify-center items-center gap-2 px-3 py-2 border border-lapis-200 text-lapis-700 hover:bg-lapis-50 rounded-lg transition-colors font-bold text-xs"
+                                        />
+                                        <ContractDownloadButton
+                                            type="privacy"
+                                            data={{
+                                                contractType: contract.contract_type,
+                                                studentName: contract.student ? `${contract.student.last_name} ${contract.student.first_name}` : '生徒氏名',
+                                                parentName: contract.parent_signature_name || '保護者氏名',
+                                                signatureName: contract.parent_signature_name || '署名済',
+                                                subjects: contract.subjects || [],
+                                                monthlyFee: contract.monthly_fee || 0,
+                                                admissionFee: contract.admission_fee || 0,
+                                                systemFee: contract.system_fee || 0,
+                                                signedAt: contract.created_at,
+                                                ipAddress: contract.ip_address || "記録なし",
+                                                termsSnapshot: contract.terms_snapshot,
+                                                privacySnapshot: contract.privacy_snapshot,
+                                                contractSnapshot: contract.contract_snapshot,
+                                            }}
+                                            fileName={`個人情報保護方針同意書_${contract.student ? contract.student.first_name : '控'}.pdf`}
+                                            label="個人情報方針をダウンロード"
+                                            className="w-full flex justify-center items-center gap-2 px-3 py-2 border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors font-bold text-xs"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6 border-t border-gray-100 dark:border-gray-800">

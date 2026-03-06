@@ -54,6 +54,7 @@ export default function Sidebar({ user, onClose }: { user: UserProfile, onClose:
         { name: "設定", href: "/dashboard/settings", icon: Settings },
     ];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let roleLinks: { name: string, href: string, icon: any }[] = [];
 
     if (user.role === "admin") {
@@ -64,6 +65,7 @@ export default function Sidebar({ user, onClose }: { user: UserProfile, onClose:
             { name: "宿題管理", href: "/dashboard/homework", icon: NotebookPen },
             { name: "教材管理", href: "/dashboard/materials/manage", icon: BookOpen },
             { name: "契約管理", href: "/dashboard/contracts/manage", icon: FileSignature },
+            { name: "規約・同意書設定", href: "/dashboard/settings/terms", icon: FileText },
         ];
     } else if (user.role === "parent") {
         roleLinks = [
@@ -77,6 +79,7 @@ export default function Sidebar({ user, onClose }: { user: UserProfile, onClose:
         ];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const NavItem = ({ link }: { link: any }) => {
         const isActive = pathname === link.href;
         return (

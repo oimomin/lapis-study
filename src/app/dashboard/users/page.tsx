@@ -6,8 +6,11 @@ import { UserPlus, Search, Link as LinkIcon, AlertCircle, CheckCircle2 } from "l
 
 export default function UserManagementPage() {
     const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [parents, setParents] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [students, setStudents] = useState<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [connections, setConnections] = useState<any[]>([]);
 
     // Form state
@@ -57,6 +60,7 @@ export default function UserManagementPage() {
             if (connError) throw connError;
             setConnections(connectionsData || []);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error("データの取得に失敗しました:", err);
             setError(err.message || "データの取得に失敗しました。RLSの設定を確認してください。");
@@ -109,6 +113,7 @@ export default function UserManagementPage() {
             // Refresh connections list
             fetchData();
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error(err);
             setError(err.message || "紐づけの保存に失敗しました。");
@@ -134,6 +139,7 @@ export default function UserManagementPage() {
 
             setSuccess("紐づけを解除しました。");
             fetchData();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error(err);
             setError("解除に失敗しました。");
