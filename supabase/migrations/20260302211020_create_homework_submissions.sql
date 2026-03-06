@@ -1,6 +1,6 @@
 -- Create homework_submissions table
 CREATE TABLE public.homework_submissions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id UUID REFERENCES public.events(id) ON DELETE CASCADE,
     student_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
     status TEXT NOT NULL CHECK (status IN ('submitted', 'graded', 'returned')),
@@ -52,7 +52,7 @@ CREATE POLICY "Parents can view connected students' submissions" ON public.homew
 
 -- Create homework_photos table
 CREATE TABLE public.homework_photos (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     submission_id UUID REFERENCES public.homework_submissions(id) ON DELETE CASCADE,
     photo_url TEXT NOT NULL,
     graded_photo_url TEXT,

@@ -1,6 +1,6 @@
 -- Create Family Connections Table
 create table public.family_connections (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   parent_id uuid not null references public.users(id) on delete cascade,
   student_id uuid not null references public.users(id) on delete cascade,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
