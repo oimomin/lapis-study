@@ -24,12 +24,13 @@
 .DS_Store
 *.pem
 
-# debug
+# debug & local notes
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 debug_logs/
+/onegai/
 
 # env files (can opt-in for committing if needed)
 .env*
