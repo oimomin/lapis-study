@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Settings as SettingsIcon, User, Moon, Sun, Monitor, Shield, LogOut, CheckCircle2 } from "lucide-react";
+import { Settings as SettingsIcon, User, Moon, Sun, Monitor, Shield, LogOut, CheckCircle2, MessageCircle, Copy, RefreshCw } from "lucide-react";
 
 export default function SettingsPage() {
     const supabase = createClient();
@@ -13,6 +13,11 @@ export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+    // LINE Integration state
+    const [lineToken, setLineToken] = useState<string | null>(null);
+    const [isGeneratingToken, setIsGeneratingToken] = useState(false);
+    const [isLinked, setIsLinked] = useState(false);
 
     // Profile form state
     const [formData, setFormData] = useState({
@@ -44,6 +49,12 @@ export default function SettingsPage() {
                         grade_level: profileData.grade_level || "",
                         target_high_school: profileData.target_high_school || ""
                     });
+
+                    if (profileData.line_user_id) {
+                        setIsLinked(true);
+                    } else if (profileData.line_link_token) {
+                        setLineToken(profileData.line_link_token);
+                    }
                 }
             }
             setIsLoading(false);
@@ -75,7 +86,7 @@ export default function SettingsPage() {
 
             setMessage({ type: 'success', text: "プロフィールを更新しました。" });
             setTimeout(() => setMessage(null), 3000);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("更新エラー:", error);
             setMessage({ type: 'error', text: "更新に失敗しました。もう一度お試しください。" });
@@ -109,6 +120,35 @@ export default function SettingsPage() {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
+        }
+    };
+
+    const generateLineToken = async () => {
+        if (!user) return;
+        setIsGeneratingToken(true);
+        // Generate a random 6-character alphanumeric token
+        const newToken = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+        try {
+            const { error } = await supabase
+                .from('users')
+                .update({ line_link_token: newToken })
+                .eq('id', user.id);
+
+            if (error) throw error;
+            setLineToken(newToken);
+        } catch (error) {
+            console.error("Failed to generate token:", error);
+            setMessage({ type: 'error', text: "トークンの発行に失敗しました。" });
+        } finally {
+            setIsGeneratingToken(false);
+        }
+    };
+
+    const copyToClipboard = () => {
+        if (lineToken) {
+            navigator.clipboard.writeText(lineToken);
+            // Could add a small toast here if desired
         }
     };
 
@@ -159,8 +199,8 @@ export default function SettingsPage() {
                             <button
                                 onClick={() => handleThemeChange('light')}
                                 className={`flex items-center justify-center gap-2 p-3 rounded-xl font-bold transition-all ${theme === 'light'
-                                        ? 'border-2 border-lapis-500 bg-lapis-50 text-lapis-700'
-                                        : 'border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400'
+                                    ? 'border-2 border-lapis-500 bg-lapis-50 text-lapis-700'
+                                    : 'border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400'
                                     }`}
                             >
                                 <Sun className="w-4 h-4" /> ライト
@@ -168,8 +208,8 @@ export default function SettingsPage() {
                             <button
                                 onClick={() => handleThemeChange('dark')}
                                 className={`flex items-center justify-center gap-2 p-3 rounded-xl font-bold transition-all ${theme === 'dark'
-                                        ? 'border-2 border-lapis-500 bg-lapis-900/40 text-lapis-300'
-                                        : 'border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400'
+                                    ? 'border-2 border-lapis-500 bg-lapis-900/40 text-lapis-300'
+                                    : 'border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400'
                                     }`}
                             >
                                 <Moon className="w-4 h-4" /> ダーク
@@ -268,6 +308,67 @@ export default function SettingsPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+
+                    {/* LINE Integration Section */}
+                    <div className="bg-white/60 dark:bg-black/40 border border-gray-200 dark:border-gray-800 p-6 md:p-8 rounded-2xl shadow-sm backdrop-blur-xl mt-8">
+                        <h2 className="text-xl font-bold mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 pb-4">
+                            <MessageCircle className="w-5 h-5 text-green-500" />
+                            LINE通知連携
+                        </h2>
+
+                        {isLinked ? (
+                            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-6 rounded-xl flex items-center gap-4">
+                                <div className="w-12 h-12 bg-green-100 dark:bg-green-800 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-green-800 dark:text-green-300">連携済みです</h3>
+                                    <p className="text-sm text-green-700 dark:text-green-400 mt-1">
+                                        お知らせや連絡事項などをLINEでお受け取りいただけます。
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                                    Lapis Studyの公式LINEアカウントと連携すると、お知らせや宿題の通知を直接LINEで受け取ることができます。
+                                    以下の連携コードを発行し、公式アカウントのトーク画面に送信してください。
+                                </p>
+
+                                <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-xl text-center space-y-4">
+                                    {!lineToken ? (
+                                        <button
+                                            onClick={generateLineToken}
+                                            disabled={isGeneratingToken}
+                                            className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-all shadow-md shadow-green-500/20 flex items-center gap-2 mx-auto disabled:opacity-50"
+                                        >
+                                            <RefreshCw className={`w-4 h-4 ${isGeneratingToken ? 'animate-spin' : ''}`} />
+                                            連携コードを発行する
+                                        </button>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <p className="text-sm font-bold text-gray-500">あなたの専用連携コード</p>
+                                            <div className="flex items-center justify-center gap-3">
+                                                <div className="text-4xl font-extrabold tracking-widest text-lapis-600 dark:text-lapis-400 bg-white dark:bg-gray-800 border-2 border-lapis-200 dark:border-lapis-800 px-6 py-3 rounded-xl">
+                                                    {lineToken}
+                                                </div>
+                                                <button
+                                                    onClick={copyToClipboard}
+                                                    className="p-3 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-xl transition-colors text-gray-700 dark:text-gray-300"
+                                                    title="コピーする"
+                                                >
+                                                    <Copy className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-2">
+                                                ※このコードをLINEのトーク画面で送信してください。
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

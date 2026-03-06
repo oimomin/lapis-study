@@ -41,6 +41,26 @@ export default function NewNoticePage() {
 
             if (error) throw error;
 
+            // Trigger LINE notification if published
+            if (isPublished) {
+                try {
+                    await fetch('/api/notifications', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'notice',
+                            payload: {
+                                title: title,
+                                excerpt: content.length > 50 ? content.substring(0, 50) + "..." : content,
+                                targetAudience: targetAudience
+                            }
+                        })
+                    });
+                } catch (notifyErr) {
+                    console.error("Failed to trigger LINE notification:", notifyErr);
+                }
+            }
+
             // Redirect back to manage page
             router.push('/dashboard/notices/manage');
             router.refresh();
@@ -101,8 +121,8 @@ export default function NewNoticePage() {
                             type="button"
                             onClick={() => setTargetAudience('all')}
                             className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${targetAudience === 'all'
-                                    ? 'border-lapis-500 bg-lapis-50 dark:bg-lapis-900/20 text-lapis-700 dark:text-lapis-300'
-                                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-500 hover:border-lapis-200 dark:hover:border-lapis-800'
+                                ? 'border-lapis-500 bg-lapis-50 dark:bg-lapis-900/20 text-lapis-700 dark:text-lapis-300'
+                                : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-500 hover:border-lapis-200 dark:hover:border-lapis-800'
                                 }`}
                         >
                             <Building2 className="w-6 h-6 mb-2" />
@@ -112,8 +132,8 @@ export default function NewNoticePage() {
                             type="button"
                             onClick={() => setTargetAudience('students')}
                             className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${targetAudience === 'students'
-                                    ? 'border-lapis-500 bg-lapis-50 dark:bg-lapis-900/20 text-lapis-700 dark:text-lapis-300'
-                                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-500 hover:border-lapis-200 dark:hover:border-lapis-800'
+                                ? 'border-lapis-500 bg-lapis-50 dark:bg-lapis-900/20 text-lapis-700 dark:text-lapis-300'
+                                : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-500 hover:border-lapis-200 dark:hover:border-lapis-800'
                                 }`}
                         >
                             <Users className="w-6 h-6 mb-2" />
@@ -123,8 +143,8 @@ export default function NewNoticePage() {
                             type="button"
                             onClick={() => setTargetAudience('parents')}
                             className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${targetAudience === 'parents'
-                                    ? 'border-lapis-500 bg-lapis-50 dark:bg-lapis-900/20 text-lapis-700 dark:text-lapis-300'
-                                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-500 hover:border-lapis-200 dark:hover:border-lapis-800'
+                                ? 'border-lapis-500 bg-lapis-50 dark:bg-lapis-900/20 text-lapis-700 dark:text-lapis-300'
+                                : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-500 hover:border-lapis-200 dark:hover:border-lapis-800'
                                 }`}
                         >
                             <FileText className="w-6 h-6 mb-2" />
@@ -188,8 +208,8 @@ export default function NewNoticePage() {
                         type="submit"
                         disabled={isSubmitting}
                         className={`px-8 py-3 rounded-xl font-bold text-white shadow-sm transition-all flex items-center gap-2 ${isPublished
-                                ? 'bg-lapis-600 hover:bg-lapis-700'
-                                : 'bg-gray-600 hover:bg-gray-700'
+                            ? 'bg-lapis-600 hover:bg-lapis-700'
+                            : 'bg-gray-600 hover:bg-gray-700'
                             } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                         {isSubmitting ? (

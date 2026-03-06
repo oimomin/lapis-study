@@ -177,6 +177,23 @@ export default function StandaloneHomeworkSubmitPage() {
                 date: new Date().toISOString()
             });
 
+            // 4. Trigger LINE Notification for submission
+            try {
+                await fetch('/api/notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'homework_submitted',
+                        payload: {
+                            studentName: studentName,
+                            subject: subject
+                        }
+                    })
+                });
+            } catch (notifyErr) {
+                console.error("Failed to trigger LINE notification:", notifyErr);
+            }
+
             setIsSuccess(true);
             fetchHistory(); // Refresh history
         } catch (error) {

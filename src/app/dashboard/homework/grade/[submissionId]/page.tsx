@@ -321,6 +321,23 @@ export default function GradeHomeworkPage({ params }: { params: Promise<{ submis
                 .update({ status: 'graded' })
                 .eq('id', submission.id);
 
+            // 6. Trigger LINE Notification for grading
+            try {
+                await fetch('/api/notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'homework_graded',
+                        payload: {
+                            studentId: submission.student_id,
+                            title: displayTitle
+                        }
+                    })
+                });
+            } catch (notifyErr) {
+                console.error("Failed to trigger LINE notification:", notifyErr);
+            }
+
             alert("採点結果を保存しました！");
 
             // Reload data
