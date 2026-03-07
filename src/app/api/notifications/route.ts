@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getLineClient } from '@/lib/line';
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 export async function POST(request: Request) {
     try {
         const { type, payload } = await request.json();
-        const supabase = createClient();
+        const supabase = createAdminClient();
         const client = getLineClient();
 
         if (!client) {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
             };
             const normalizedAudience = audienceRoleMap[targetAudience] || targetAudience;
 
-            let query = (await supabase)
+            let query = supabase
                 .from('users')
                 .select('line_user_id, role')
                 .not('line_user_id', 'is', null);
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
             const { studentName, subject } = payload;
 
             // Notify all admins
-            const { data: admins, error } = await (await supabase)
+            const { data: admins, error } = await supabase
                 .from('users')
                 .select('line_user_id')
                 .eq('role', 'admin')
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
             const { studentId, title } = payload;
 
             // Notify the student and their connected parents
-            const { data: student, error: studentError } = await (await supabase)
+            const { data: student, error: studentError } = await supabase
                 .from('users')
                 .select('line_user_id')
                 .eq('id', studentId)
@@ -71,14 +71,14 @@ export async function POST(request: Request) {
             }
 
             // Parent lookup
-            const { data: connections } = await (await supabase)
+            const { data: connections } = await supabase
                 .from('family_connections')
                 .select('parent_id')
                 .eq('student_id', studentId);
 
             if (connections && connections.length > 0) {
                 const parentIds = connections.map(c => c.parent_id);
-                const { data: parents } = await (await supabase)
+                const { data: parents } = await supabase
                     .from('users')
                     .select('line_user_id')
                     .in('id', parentIds)

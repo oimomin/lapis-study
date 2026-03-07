@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { WebhookEvent, MessageEvent, TextMessage } from '@line/bot-sdk';
 import { getLineClient, sendLineMessage } from '@/lib/line';
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 export async function POST(request: Request) {
     // 1. Verify Request
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: 'No events' }, { status: 200 });
     }
 
-    const supabase = createClient();
+    const supabase = createAdminClient();
     const lineClient = getLineClient();
 
     if (!lineClient) {
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
             if (/^[A-Z0-9]{6}$/i.test(receivedToken)) {
                 try {
                     // Find user by token
-                    const { data: user, error: findError } = await (await supabase)
+                    const { data: user, error: findError } = await supabase
                         .from('users')
                         .select('id, first_name, last_name')
                         .eq('line_link_token', receivedToken.toUpperCase())
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
                     }
 
                     // 4. Link the LINE account
-                    const { error: updateError } = await (await supabase)
+                    const { error: updateError } = await supabase
                         .from('users')
                         .update({
                             line_user_id: lineUserId,
