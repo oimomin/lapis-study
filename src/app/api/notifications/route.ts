@@ -13,20 +13,24 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true, message: 'LINE not configured' });
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const userIdsToNotify = new Set<string>();
         let messageText = '';
 
         if (type === 'notice') {
             const { title, excerpt, targetAudience } = payload;
+            const audienceRoleMap: Record<string, string> = {
+                students: 'student',
+                parents: 'parent',
+            };
+            const normalizedAudience = audienceRoleMap[targetAudience] || targetAudience;
 
             let query = (await supabase)
                 .from('users')
                 .select('line_user_id, role')
                 .not('line_user_id', 'is', null);
 
-            if (targetAudience !== 'all') {
-                query = query.eq('role', targetAudience);
+            if (normalizedAudience !== 'all') {
+                query = query.eq('role', normalizedAudience);
             }
 
             const { data: users, error } = await query;
