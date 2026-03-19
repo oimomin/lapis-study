@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Settings as SettingsIcon, User, Moon, Sun, Monitor, Shield, LogOut, CheckCircle2, MessageCircle, Copy, RefreshCw } from "lucide-react";
+import { Settings as SettingsIcon, User, Moon, Sun, Monitor, Shield, CheckCircle2, MessageCircle, Copy, RefreshCw, Eye, EyeOff, LockKeyhole } from "lucide-react";
 
 export default function SettingsPage() {
     const supabase = createClient();
@@ -13,6 +13,13 @@ export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [showPasswords, setShowPasswords] = useState({
+        current: false,
+        next: false,
+        confirm: false,
+    });
 
     // LINE Integration state
     const [lineToken, setLineToken] = useState<string | null>(null);
@@ -26,6 +33,11 @@ export default function SettingsPage() {
         school_name: "",
         grade_level: "",
         target_high_school: ""
+    });
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
     });
 
     useEffect(() => {
@@ -149,6 +161,69 @@ export default function SettingsPage() {
         if (lineToken) {
             navigator.clipboard.writeText(lineToken);
             // Could add a small toast here if desired
+        }
+    };
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user?.email) return;
+
+        setIsChangingPassword(true);
+        setPasswordMessage(null);
+
+        if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+            setPasswordMessage({ type: 'error', text: "すべての項目を入力してください。" });
+            setIsChangingPassword(false);
+            return;
+        }
+
+        if (passwordData.newPassword.length < 8) {
+            setPasswordMessage({ type: 'error', text: "新しいパスワードは8文字以上で入力してください。" });
+            setIsChangingPassword(false);
+            return;
+        }
+
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            setPasswordMessage({ type: 'error', text: "新しいパスワードと確認用パスワードが一致しません。" });
+            setIsChangingPassword(false);
+            return;
+        }
+
+        if (passwordData.currentPassword === passwordData.newPassword) {
+            setPasswordMessage({ type: 'error', text: "現在と異なる新しいパスワードを設定してください。" });
+            setIsChangingPassword(false);
+            return;
+        }
+
+        try {
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: user.email,
+                password: passwordData.currentPassword,
+            });
+
+            if (signInError) {
+                setPasswordMessage({ type: 'error', text: "現在のパスワードが正しくありません。" });
+                return;
+            }
+
+            const { error: updateError } = await supabase.auth.updateUser({
+                password: passwordData.newPassword,
+            });
+
+            if (updateError) throw updateError;
+
+            setPasswordData({
+                currentPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            });
+            setPasswordMessage({ type: 'success', text: "パスワードを更新しました。" });
+            setTimeout(() => setPasswordMessage(null), 3000);
+        } catch (error) {
+            console.error("Password update error:", error);
+            setPasswordMessage({ type: 'error', text: "パスワードの更新に失敗しました。もう一度お試しください。" });
+        } finally {
+            setIsChangingPassword(false);
         }
     };
 
@@ -305,6 +380,98 @@ export default function SettingsPage() {
                                     className="px-8 py-3 rounded-xl bg-lapis-600 hover:bg-lapis-700 text-white font-bold shadow-md shadow-lapis-500/20 transition-all active:scale-[0.98] disabled:opacity-50"
                                 >
                                     {isSaving ? "保存中..." : "変更を保存"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div className="bg-white/60 dark:bg-black/40 border border-gray-200 dark:border-gray-800 p-6 md:p-8 rounded-2xl shadow-sm backdrop-blur-xl mt-8">
+                        <h2 className="text-xl font-bold mb-2 flex items-center gap-2 border-b border-gray-100 dark:border-gray-800 pb-4">
+                            <LockKeyhole className="w-5 h-5 text-lapis-500" />
+                            パスワード変更
+                        </h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                            現在のパスワードを確認してから、新しいパスワードへ更新します。
+                        </p>
+
+                        {passwordMessage && (
+                            <div className={`p-4 rounded-xl mb-6 flex items-center gap-2 ${passwordMessage.type === 'success' ? 'bg-success-50 text-success-600 border border-success-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+                                {passwordMessage.type === 'success' && <CheckCircle2 className="w-5 h-5" />}
+                                {passwordMessage.text}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleChangePassword} className="space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">現在のパスワード</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPasswords.current ? "text" : "password"}
+                                        value={passwordData.currentPassword}
+                                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                                        className="w-full p-3 pr-12 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-lapis-500 transition-shadow outline-none"
+                                        autoComplete="current-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    >
+                                        {showPasswords.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid sm:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">新しいパスワード</label>
+                                    <div className="relative">
+                                        <input
+                                            type={showPasswords.next ? "text" : "password"}
+                                            value={passwordData.newPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                            className="w-full p-3 pr-12 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-lapis-500 transition-shadow outline-none"
+                                            autoComplete="new-password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPasswords({ ...showPasswords, next: !showPasswords.next })}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                        >
+                                            {showPasswords.next ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">8文字以上で設定してください。</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">確認用パスワード</label>
+                                    <div className="relative">
+                                        <input
+                                            type={showPasswords.confirm ? "text" : "password"}
+                                            value={passwordData.confirmPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                                            className="w-full p-3 pr-12 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-lapis-500 transition-shadow outline-none"
+                                            autoComplete="new-password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                        >
+                                            {showPasswords.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-6 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={isChangingPassword}
+                                    className="px-8 py-3 rounded-xl bg-lapis-600 hover:bg-lapis-700 text-white font-bold shadow-md shadow-lapis-500/20 transition-all active:scale-[0.98] disabled:opacity-50"
+                                >
+                                    {isChangingPassword ? "更新中..." : "パスワードを更新"}
                                 </button>
                             </div>
                         </form>
