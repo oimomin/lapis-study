@@ -114,7 +114,7 @@ function SignInForm() {
                         <label className="block text-sm font-medium text-app-text dark:text-app-text-dark">
                             パスワード
                         </label>
-                        <Link href="#" className="text-sm font-medium text-lapis-600 dark:text-lapis-400 hover:text-lapis-500 transition-colors">
+                        <Link href="/forgot-password" className="text-sm font-medium text-lapis-600 dark:text-lapis-400 hover:text-lapis-500 transition-colors">
                             パスワードをお忘れですか？
                         </Link>
                     </div>
