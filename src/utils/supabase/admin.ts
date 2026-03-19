@@ -1,7 +1,8 @@
 import 'server-only';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { Database } from '@/utils/supabase/database';
 
-let adminClient: ReturnType<typeof createSupabaseClient> | null = null;
+let adminClient: ReturnType<typeof createSupabaseClient<Database>> | null = null;
 
 export function createAdminClient() {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,7 +13,7 @@ export function createAdminClient() {
     }
 
     if (!adminClient) {
-        adminClient = createSupabaseClient(url, serviceRoleKey, {
+        adminClient = createSupabaseClient<Database>(url, serviceRoleKey, {
             auth: {
                 autoRefreshToken: false,
                 persistSession: false,
